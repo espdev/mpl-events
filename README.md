@@ -1,2 +1,3 @@
 # mpl-events
-Simple and convenient matplotlib event handling
+
+A tiny library for simple and convenient [matplotlib](https://matplotlib.org/) event handling.
