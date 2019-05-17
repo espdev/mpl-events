@@ -2,6 +2,7 @@
 
 import enum
 import weakref
+import logging
 
 from typing import List, Optional
 
@@ -23,6 +24,9 @@ from ._types import (
     EventHandler_Type,
     WeakRefFigure_Type,
 )
+
+
+logger = logging.getLogger('mpl_events')
 
 
 class MplEvent(enum.Enum):
@@ -56,7 +60,10 @@ class MplEventConnection:
     def __init__(self, figure: Figure,
                  event: MplEvent,
                  handler: EventHandler_Type):
-        self._figure = weakref.ref(figure, self._disconnect)
+        if not figure.canvas:
+            raise ValueError('The figure has no a canvas')
+
+        self._figure = weakref.ref(figure)
         self._event = event
         self._handler = handler
         self._id = -1
@@ -110,22 +117,28 @@ class MplEventConnection:
     def connect(self):
         """Connects the matplotlib event and the handler callable
         """
-        if self.valid:
-            self._connect(self.figure)
+        if not self.valid:
+            logger.error('Figure ref is dead')
+            self._id = -1
+            return
+
+        if self.connected:
+            return
+
+        self._id = self.figure.canvas.mpl_connect(self._event.value, self._handler)
+        logger.debug('Event "%s" was connected to handler %s (id=%d)',
+                     self.event.value, self._handler, self._id)
 
     def disconnect(self):
         """Disconnects the matplotlib event and the handler callable
         """
-        self._disconnect(self.figure)
+        if not self.connected:
+            return
 
-    def _connect(self, figure: Figure):
-        self._disconnect(figure)
-        self._id = figure.canvas.mpl_connect(self._event.value, self._handler)
-
-    def _disconnect(self, figure: Figure):
-        if self._id > 0 and figure:
-            figure.canvas.mpl_disconnect(self._id)
-            self._id = -1
+        self.figure.canvas.mpl_disconnect(self._id)
+        logger.debug('Event "%s" was disconnected from handler %s (id=%d)',
+                     self.event.value, self._handler, self._id)
+        self._id = -1
 
 
 class MplEventDispatcher:

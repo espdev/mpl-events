@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .__version__ import __version__
+import logging
+
+logging.getLogger('mpl_events').addHandler(logging.NullHandler())
 
 from ._types import (
     MplObject_Type,
@@ -12,3 +14,12 @@ from ._base import (
     MplEventConnection,
     MplEventDispatcher,
 )
+
+from .__version__ import __version__
+
+
+__all__ = [
+    'MplEvent',
+    'MplEventConnection',
+    'MplEventDispatcher',
+]
