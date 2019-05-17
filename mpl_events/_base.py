@@ -225,6 +225,10 @@ class MplEventDispatcher:
     def connect(self):
         """Connects the matplotlib events and implemented event handlers for this instance
         """
+        if not self.valid:
+            logger.error('The figure ref is dead')
+            return
+
         self.disconnect()
         for conn in self._connections:
             conn.connect()
@@ -232,6 +236,9 @@ class MplEventDispatcher:
     def disconnect(self):
         """Disconnects the implemented handlers for the related matplotlib events for this instance
         """
+        if not self.valid:
+            return
+
         for conn in self._connections:
             conn.disconnect()
 
