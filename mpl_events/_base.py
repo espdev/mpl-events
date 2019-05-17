@@ -126,7 +126,7 @@ class MplEventConnection:
             return
 
         self._id = self.figure.canvas.mpl_connect(self._event.value, self._handler)
-        logger.debug('Event "%s" was connected to handler %s (id=%d)',
+        logger.debug('"%s" was connected to %s handler (id=%d)',
                      self.event.value, self._handler, self._id)
 
     def disconnect(self):
@@ -136,17 +136,13 @@ class MplEventConnection:
             return
 
         self.figure.canvas.mpl_disconnect(self._id)
-        logger.debug('Event "%s" was disconnected from handler %s (id=%d)',
+        logger.debug('"%s" was disconnected from %s handler (id=%d)',
                      self.event.value, self._handler, self._id)
         self._id = -1
 
 
 class MplEventDispatcher:
     """The base dispatcher class for connecting and handling all matplotlib events
-    """
-
-    __all_connections__ = weakref.WeakKeyDictionary()
-    """The weak dict contains all connected events
     """
 
     event_handlers = {
@@ -167,13 +163,11 @@ class MplEventDispatcher:
     }
 
     def __init__(self, mpl_obj: MplObject_Type):
-        self._figure = weakref.ref(self._get_figure(mpl_obj), self._destroy_figure)
+        self._figure = weakref.ref(self._get_figure(mpl_obj))
         self._connections = self._init_connections()
 
     def __del__(self):
         self.disconnect()
-        if self.valid:
-            del self.__all_connections__[self.figure][self]
 
     @staticmethod
     def _get_figure(mpl_obj: MplObject_Type) -> Figure:
@@ -198,22 +192,14 @@ class MplEventDispatcher:
                 conn = MplEventConnection(self.figure, event, handler)
                 conns.append(conn)
 
-        if conns and self.valid:
-            fig_conns = self.__all_connections__.setdefault(
-                self.figure, weakref.WeakKeyDictionary())
-            fig_conns[self] = conns
-
         return conns
-
-    def _destroy_figure(self, figure: Figure):
-        if figure:
-            del self.__all_connections__[figure]
 
     def _get_handler(self, handler_name: str) -> Optional[EventHandler_Type]:
         for cls in type(self).__mro__:
             if cls is not MplEventDispatcher and handler_name in cls.__dict__:
                 handler = getattr(self, handler_name)
                 if callable(handler):
+                    logger.debug('Found event handler: %s', handler)
                     return handler
 
     @property
