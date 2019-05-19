@@ -145,7 +145,7 @@ class MplEventDispatcher:
     """The base dispatcher class for connecting and handling all matplotlib events
     """
 
-    event_handlers = {
+    mpl_event_handlers = {
         MplEvent.KEY_PRESS: 'on_key_press',
         MplEvent.KEY_RELEASE: 'on_key_release',
         MplEvent.MOUSE_BUTTON_PRESS: 'on_mouse_button_press',
@@ -164,7 +164,7 @@ class MplEventDispatcher:
 
     def __init__(self, mpl_obj: MplObject_Type):
         self._figure = weakref.ref(self._get_figure(mpl_obj))
-        self._connections = self._init_connections()
+        self._mpl_connections = self._init_connections()
 
     def __del__(self):
         self.mpl_disconnect()
@@ -186,7 +186,7 @@ class MplEventDispatcher:
     def _init_connections(self) -> List[MplEventConnection]:
         conns = []
 
-        for event, handler_name in self.event_handlers.items():
+        for event, handler_name in self.mpl_event_handlers.items():
             handler = self._get_handler(handler_name)
             if handler:
                 conn = MplEventConnection(self.figure, event, handler)
@@ -217,10 +217,10 @@ class MplEventDispatcher:
         return self.figure is not None
 
     @property
-    def connections(self) -> List[MplEventConnection]:
-        """Returns the list of connections for this event dispatcher instance
+    def mpl_connections(self) -> List[MplEventConnection]:
+        """Returns the list of mpl_connections for this event dispatcher instance
         """
-        return self._connections
+        return self._mpl_connections
 
     def mpl_connect(self):
         """Connects the matplotlib events to implemented event handlers for this instance
@@ -230,7 +230,7 @@ class MplEventDispatcher:
             return
 
         self.mpl_disconnect()
-        for conn in self._connections:
+        for conn in self._mpl_connections:
             conn.connect()
 
     def mpl_disconnect(self):
@@ -239,7 +239,7 @@ class MplEventDispatcher:
         if not self.valid:
             return
 
-        for conn in self._connections:
+        for conn in self._mpl_connections:
             conn.disconnect()
 
     # ########################################################################
