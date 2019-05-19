@@ -167,7 +167,7 @@ class MplEventDispatcher:
         self._connections = self._init_connections()
 
     def __del__(self):
-        self.disconnect()
+        self.mpl_disconnect()
 
     @staticmethod
     def _get_figure(mpl_obj: MplObject_Type) -> Figure:
@@ -222,18 +222,18 @@ class MplEventDispatcher:
         """
         return self._connections
 
-    def connect(self):
-        """Connects the matplotlib events and implemented event handlers for this instance
+    def mpl_connect(self):
+        """Connects the matplotlib events to implemented event handlers for this instance
         """
         if not self.valid:
             logger.error('The figure ref is dead')
             return
 
-        self.disconnect()
+        self.mpl_disconnect()
         for conn in self._connections:
             conn.connect()
 
-    def disconnect(self):
+    def mpl_disconnect(self):
         """Disconnects the implemented handlers for the related matplotlib events for this instance
         """
         if not self.valid:
