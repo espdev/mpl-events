@@ -2,7 +2,6 @@
 
 import enum
 import weakref
-import logging
 
 from typing import List, Optional
 
@@ -25,8 +24,7 @@ from ._types import (
     WeakRefFigure_Type,
 )
 
-
-logger = logging.getLogger('mpl_events')
+from ._logging import logger
 
 
 class MplEvent(enum.Enum):
@@ -141,26 +139,39 @@ class MplEventConnection:
         self._id = -1
 
 
+def mpl_event_handler(event_type: MplEvent):
+    """Marks the decorated method as given matplotlib event handler
+
+    This decorator should be used only for methods of classes that
+    inherited from `MplEventDispatcher` class.
+
+    You can use this decorator for reassignment event handlers in your dispatcher class.
+
+    Example:
+
+        class MyEventDispatcher(MplEventDispatcher):
+            @mpl_event_handler(MplEvent.KEY_PRESS)
+            def on_my_key_press(self, event: mpl.KeyPress):
+                pass
+    """
+    class HandlerDescriptor:
+        def __init__(self, handler):
+            self.handler = handler
+
+        def __get__(self, obj, cls=None):
+            return self.handler.__get__(obj, cls)
+
+        def __set_name__(self, owner, name):
+            owner.mpl_event_handlers[event_type] = name
+
+    return HandlerDescriptor
+
+
 class MplEventDispatcher:
     """The base dispatcher class for connecting and handling all matplotlib events
     """
 
-    mpl_event_handlers = {
-        MplEvent.KEY_PRESS: 'on_key_press',
-        MplEvent.KEY_RELEASE: 'on_key_release',
-        MplEvent.MOUSE_BUTTON_PRESS: 'on_mouse_button_press',
-        MplEvent.MOUSE_BUTTON_RELEASE: 'on_mouse_button_release',
-        MplEvent.MOUSE_MOVE: 'on_mouse_move',
-        MplEvent.MOUSE_WHEEL_SCROLL: 'on_mouse_wheel_scroll',
-        MplEvent.FIGURE_RESIZE: 'on_figure_resize',
-        MplEvent.FIGURE_ENTER: 'on_figure_enter',
-        MplEvent.FIGURE_LEAVE: 'on_figure_leave',
-        MplEvent.FIGURE_CLOSE: 'on_figure_close',
-        MplEvent.AXES_ENTER: 'on_axes_enter',
-        MplEvent.AXES_LEAVE: 'on_axes_leave',
-        MplEvent.PICK: 'on_pick',
-        MplEvent.DRAW: 'on_draw',
-    }
+    mpl_event_handlers = {}
 
     def __init__(self, mpl_obj: MplObject_Type):
         self._figure = weakref.ref(self._get_figure(mpl_obj))
@@ -249,58 +260,72 @@ class MplEventDispatcher:
     # subclasses and will be connected to relevant events automatically.
     # ########################################################################
 
+    @mpl_event_handler(MplEvent.KEY_PRESS)
     def on_key_press(self, event: KeyEvent):
         """KeyEvent - key is pressed
         """
 
+    @mpl_event_handler(MplEvent.KEY_RELEASE)
     def on_key_release(self, event: KeyEvent):
         """KeyEvent - key is released
         """
 
+    @mpl_event_handler(MplEvent.MOUSE_BUTTON_PRESS)
     def on_mouse_button_press(self, event: MouseEvent):
         """MouseEvent - mouse button is pressed
         """
 
+    @mpl_event_handler(MplEvent.MOUSE_BUTTON_RELEASE)
     def on_mouse_button_release(self, event: MouseEvent):
         """MouseEvent - mouse button is released
         """
 
+    @mpl_event_handler(MplEvent.MOUSE_MOVE)
     def on_mouse_move(self, event: MouseEvent):
         """MouseEvent - mouse motion
         """
 
+    @mpl_event_handler(MplEvent.MOUSE_WHEEL_SCROLL)
     def on_mouse_wheel_scroll(self, event: MouseEvent):
         """MouseEvent - mouse scroll wheel is rolled
         """
 
+    @mpl_event_handler(MplEvent.FIGURE_RESIZE)
     def on_figure_resize(self, event: ResizeEvent):
         """ResizeEvent - figure canvas is resized
         """
 
+    @mpl_event_handler(MplEvent.FIGURE_ENTER)
     def on_figure_enter(self, event: LocationEvent):
         """LocationEvent - mouse enters a new figure
         """
 
+    @mpl_event_handler(MplEvent.FIGURE_LEAVE)
     def on_figure_leave(self, event: LocationEvent):
         """LocationEvent - mouse leaves a figure
         """
 
+    @mpl_event_handler(MplEvent.FIGURE_CLOSE)
     def on_figure_close(self, event: CloseEvent):
         """CloseEvent - a figure is closed
         """
 
+    @mpl_event_handler(MplEvent.AXES_ENTER)
     def on_axes_enter(self, event: LocationEvent):
         """LocationEvent - mouse enters a new axes
         """
 
+    @mpl_event_handler(MplEvent.AXES_LEAVE)
     def on_axes_leave(self, event: LocationEvent):
         """LocationEvent - mouse leaves an axes
         """
 
+    @mpl_event_handler(MplEvent.PICK)
     def on_pick(self, event: PickEvent):
         """PickEvent - an object in the canvas is selected
         """
 
+    @mpl_event_handler(MplEvent.DRAW)
     def on_draw(self, event: DrawEvent):
         """DrawEvent - canvas draw (but before screen update)
         """

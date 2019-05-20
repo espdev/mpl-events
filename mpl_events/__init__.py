@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import logging
-
-logging.getLogger('mpl_events').addHandler(logging.NullHandler())
-
-from ._types import (
-    MplObject_Type,
-    EventHandler_Type,
-)
+from ._logging import logger
 
 from ._base import (
     MplEvent,
     MplEventConnection,
     MplEventDispatcher,
+    mpl_event_handler,
+)
+
+from ._types import (
+    MplObject_Type,
+    EventHandler_Type,
 )
 
 from .__version__ import __version__

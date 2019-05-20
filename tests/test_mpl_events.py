@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('agg')  # do not use a gui toolkit
 from matplotlib import pyplot
 
-from mpl_events import MplEvent, MplEventConnection, MplEventDispatcher
+from mpl_events import MplEvent, MplEventConnection, MplEventDispatcher, mpl_event_handler
 from mpl_events import mpl
 
 
@@ -140,20 +140,37 @@ def test_event_dispatcher(figure, event_type, process_event):
 
 def test_event_dispatcher_inheritance(figure):
 
-    class Dispatcher1(MplEventDispatcher):
+    class EventDispatcher1(MplEventDispatcher):
         latest_events = []
 
         def on_key_press(self, event):
             self.latest_events.append(event.name)
 
-    class Dispatcher2(Dispatcher1):
+    class EventDispatcher2(EventDispatcher1):
         def on_key_release(self, event):
             self.latest_events.append(event.name)
 
-    dispatcher = Dispatcher2(figure)
+    dispatcher = EventDispatcher2(figure)
     dispatcher.mpl_connect()
 
     figure.canvas.key_press_event(None)
     figure.canvas.key_release_event(None)
 
     assert dispatcher.latest_events == [MplEvent.KEY_PRESS.value, MplEvent.KEY_RELEASE.value]
+
+
+def test_event_dispatcher_change_handler(figure):
+
+    class EventDispatcher(MplEventDispatcher):
+        latest_event = None
+
+        @mpl_event_handler(MplEvent.KEY_PRESS)
+        def on_key_press_custom(self, event):
+            self.latest_event = event.name
+
+    dispatcher = EventDispatcher(figure)
+    dispatcher.mpl_connect()
+
+    figure.canvas.key_press_event(None)
+
+    assert dispatcher.latest_event == MplEvent.KEY_PRESS.value

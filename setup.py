@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 NAME = 'mpl-events'
 ROOT_DIR = pathlib.Path(__file__).parent
-PYTHON_REQUIRES = '>=3.5, <4'
+PYTHON_REQUIRES = '>=3.6, <4'
 
 
 def _get_version():
