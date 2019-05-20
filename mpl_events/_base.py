@@ -187,6 +187,30 @@ def mpl_event_handler(event_type: MplEvent):
 
 class MplEventDispatcher:
     """The base dispatcher class for connecting and handling all matplotlib events
+
+    You can use this class as base class for your mpl event dispatcher.
+
+    Example:
+
+        from matplotlib import pyplot as plt
+        from mpl_events import MplEventDispatcher, disable_default_key_press_handler, mpl
+
+        class KeyEventDispatcher(MplEventDispatcher):
+
+            def __init__(self, mpl_obj):
+                super().__init__(mpl_obj)
+                disable_default_key_press_handler(mpl_obj)
+
+            def on_key_press(self, event: mpl.KeyEvent):
+                print(f'Pressed key {event.key}')
+
+            def on_key_release(self, event: mpl.KeyEvent):
+                print(f'Released key {event.key}')
+
+        figure = plt.figure()
+        dispatcher = KeyEventDispatcher(figure)
+        dispatcher.mpl_connect()
+        plt.show()
     """
 
     mpl_event_handlers = {}
