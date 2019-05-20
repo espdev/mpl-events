@@ -20,7 +20,9 @@ with minimum boilerplate code. The library provides high level API for using [ma
 
 ## Installation
 
-We supprort Python 3.6 and newer and we can use pip to install mpl-events:
+We supprort Python 3.6 and newer.
+
+We can use pip to install mpl-events:
 
 ```bash
 pip install mpl-events
@@ -112,7 +114,7 @@ class MyEventDispatcher(MyEventDispatcherBase):
 
 ### Event connections
 
-The connection between event and handler incapsulated in class `MplEventConnection`. 
+The connection between event and handler incapsulated in `MplEventConnection` class. 
 This class is high level wrapper for `figure.canvas.mpl_connect`/`figure.canvas.mpl_disconnect` mpl API.
 
 `MplEventConnection` can be used if we want to handle events and do not use event dispatcher interface.
