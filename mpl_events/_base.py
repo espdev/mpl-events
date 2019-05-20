@@ -162,6 +162,8 @@ def mpl_event_handler(event_type: MplEvent):
             return self.handler.__get__(obj, cls)
 
         def __set_name__(self, owner, name):
+            if 'mpl_event_handlers' not in owner.__dict__:
+                owner.mpl_event_handlers = {}
             owner.mpl_event_handlers[event_type] = name
 
     return HandlerDescriptor

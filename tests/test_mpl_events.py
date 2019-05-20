@@ -174,3 +174,29 @@ def test_event_dispatcher_change_handler(figure):
     figure.canvas.key_press_event(None)
 
     assert dispatcher.latest_event == MplEvent.KEY_PRESS.value
+
+
+def test_several_event_dispatchers(figure):
+    class EventDispatcher1(MplEventDispatcher):
+        latest_event = None
+
+        @mpl_event_handler(MplEvent.KEY_PRESS)
+        def on_key_press_custom(self, event):
+            self.latest_event = event.name
+
+    class EventDispatcher2(MplEventDispatcher):
+        latest_event = None
+
+        def on_key_press(self, event):
+            self.latest_event = event.name
+
+    dispatcher1 = EventDispatcher1(figure)
+    dispatcher1.mpl_connect()
+
+    dispatcher2 = EventDispatcher2(figure)
+    dispatcher2.mpl_connect()
+
+    figure.canvas.key_press_event(None)
+
+    assert dispatcher1.latest_event == MplEvent.KEY_PRESS.value
+    assert dispatcher2.latest_event == MplEvent.KEY_PRESS.value
