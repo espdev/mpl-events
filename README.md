@@ -20,7 +20,7 @@ with minimum boilerplate code. The library provides high level API for using [ma
 
 ## Installation
 
-We can use pip to install mpl-events:
+We supprort Python 3.6 and newer and we can use pip to install mpl-events:
 
 ```bash
 pip install mpl-events
