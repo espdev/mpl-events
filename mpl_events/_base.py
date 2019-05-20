@@ -49,19 +49,35 @@ class MplEvent(enum.Enum):
     DRAW = 'draw_event'
 
 
+def _get_mpl_figure(mpl_obj: MplObject_Type) -> Figure:
+    if isinstance(mpl_obj, Axes):
+        figure = mpl_obj.figure
+    elif isinstance(mpl_obj, Figure):
+        figure = mpl_obj
+    elif isinstance(mpl_obj, FigureCanvas):
+        figure = mpl_obj.figure
+    else:
+        raise TypeError(
+            'Invalid MPL object {}. '.format(mpl_obj)
+            + 'The object must be one of these types: "Axes", "Figure" or "FigureCanvas".'
+        )
+
+    if not figure.canvas:
+        raise ValueError('The figure object has not a canvas.')
+
+    return figure
+
+
 class MplEventConnection:
     """Implements the connection to matplotlib event
 
     The class manages the connection between a matplotlib event and a handler callable.
     """
 
-    def __init__(self, figure: Figure,
+    def __init__(self, mpl_obj: MplObject_Type,
                  event: MplEvent,
                  handler: EventHandler_Type):
-        if not figure.canvas:
-            raise ValueError('The figure has no a canvas')
-
-        self._figure = weakref.ref(figure)
+        self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._event = event
         self._handler = handler
         self._id = -1
@@ -176,27 +192,13 @@ class MplEventDispatcher:
     mpl_event_handlers = {}
 
     def __init__(self, mpl_obj: MplObject_Type):
-        self._figure = weakref.ref(self._get_figure(mpl_obj))
-        self._mpl_connections = self._init_connections()
+        self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
+        self._mpl_connections = self._init_mpl_connections()
 
     def __del__(self):
         self.mpl_disconnect()
 
-    @staticmethod
-    def _get_figure(mpl_obj: MplObject_Type) -> Figure:
-        if isinstance(mpl_obj, Axes):
-            return mpl_obj.figure
-        elif isinstance(mpl_obj, Figure):
-            return mpl_obj
-        elif isinstance(mpl_obj, FigureCanvas):
-            return mpl_obj.figure
-        else:
-            raise TypeError(
-                'Invalid MPL object {}. '.format(mpl_obj)
-                + 'The object must be one of these types: "Axes", "Figure" or "FigureCanvas".'
-            )
-
-    def _init_connections(self) -> List[MplEventConnection]:
+    def _init_mpl_connections(self) -> List[MplEventConnection]:
         conns = []
 
         for event, handler_name in self.mpl_event_handlers.items():
@@ -331,3 +333,16 @@ class MplEventDispatcher:
     def on_draw(self, event: DrawEvent):
         """DrawEvent - canvas draw (but before screen update)
         """
+
+
+def disable_default_key_press_handler(mpl_obj: MplObject_Type):
+    """Disables default key_press handling for given figure/canvas
+
+    The default key handler using the toolmanager.
+    """
+    figure = _get_mpl_figure(mpl_obj)
+
+    cid = figure.canvas.manager.key_press_handler_id
+
+    if cid:
+        figure.canvas.mpl_disconnect(cid)

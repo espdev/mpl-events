@@ -7,6 +7,7 @@ from ._base import (
     MplEventConnection,
     MplEventDispatcher,
     mpl_event_handler,
+    disable_default_key_press_handler,
 )
 
 from ._types import (
@@ -21,4 +22,6 @@ __all__ = [
     'MplEvent',
     'MplEventConnection',
     'MplEventDispatcher',
+    'mpl_event_handler',
+    'disable_default_key_press_handler',
 ]
