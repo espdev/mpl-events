@@ -76,11 +76,15 @@ class MplEventConnection:
 
     def __init__(self, mpl_obj: MplObject_Type,
                  event: MplEvent,
-                 handler: EventHandler_Type):
+                 handler: EventHandler_Type,
+                 connect: bool = True):
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._event = event
         self._handler = handler
         self._id = -1
+
+        if connect:
+            self.connect()
 
     def __del__(self):
         self.disconnect()
@@ -228,7 +232,7 @@ class MplEventDispatcher:
         for event, handler_name in self.mpl_event_handlers.items():
             handler = self._get_handler(handler_name)
             if handler:
-                conn = MplEventConnection(self.figure, event, handler)
+                conn = MplEventConnection(self.figure, event, handler, connect=False)
                 conns.append(conn)
 
         return conns
