@@ -75,7 +75,7 @@ plt.show()
 You may override and implement some of these methods for handling corresponding events.
 
 The dispatcher might be connected to a canvas using mpl objects `figure` or `axes` (or `canvas`). 
-In general, we do not need to think about it. We just pass `figure` instance to contructor usually.
+In general, we do not need to think about it. We just pass `figure` instance to constructor usually.
 
 We calls method `mpl_connect()` and it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
 
