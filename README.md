@@ -170,7 +170,6 @@ class KeyEventDispatcher(MplEventDispatcher):
 figure = plt.figure()
 
 dispatcher = KeyEventDispatcher(figure)
-dispatcher.mpl_connect()
 
 plt.show()
 ```
