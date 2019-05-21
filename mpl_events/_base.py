@@ -63,7 +63,7 @@ def _get_mpl_figure(mpl_obj: MplObject_Type) -> Figure:
         )
 
     if not figure.canvas:
-        raise ValueError('The figure object has not a canvas.')
+        raise ValueError('The figure object has no a canvas.')
 
     return figure
 
