@@ -158,9 +158,6 @@ from mpl_events import MplEventDispatcher, mpl
 class KeyEventDispatcher(MplEventDispatcher):
     disable_default_handlers = True
 
-    def __init__(self, mpl_obj):
-        super().__init__(mpl_obj)
-
     def on_key_press(self, event: mpl.KeyEvent):
         print(f'Pressed key {event.key}')
 
