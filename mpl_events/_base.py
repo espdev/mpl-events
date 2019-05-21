@@ -219,9 +219,12 @@ class MplEventDispatcher:
 
     mpl_event_handlers = {}
 
-    def __init__(self, mpl_obj: MplObject_Type):
+    def __init__(self, mpl_obj: MplObject_Type, connect: bool = False):
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._mpl_connections = self._init_mpl_connections()
+
+        if connect:
+            self.mpl_connect()
 
     def __del__(self):
         self.mpl_disconnect()
@@ -369,8 +372,6 @@ def disable_default_key_press_handler(mpl_obj: MplObject_Type):
     The default key handler using the toolmanager.
     """
     figure = _get_mpl_figure(mpl_obj)
-
     cid = figure.canvas.manager.key_press_handler_id
-
     if cid:
         figure.canvas.mpl_disconnect(cid)
