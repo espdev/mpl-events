@@ -1,6 +1,7 @@
 # mpl-events
 
-[![PyPI version](https://img.shields.io/pypi/v/mpl-events.svg)](https://pypi.python.org/pypi/mpl-events) [![License](https://img.shields.io/pypi/l/mpl-events.svg)](LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/mpl-events.svg)](https://pypi.python.org/pypi/mpl-events)
+[![License](https://img.shields.io/pypi/l/mpl-events.svg)](LICENSE)
 
 **mpl-events** is a tiny library for simple and convenient [matplotlib](https://matplotlib.org/) event handling 
 with minimum boilerplate code. In other words, the library provides high level API for using [matplotlib event system](https://matplotlib.org/users/event_handling.html).
@@ -22,7 +23,7 @@ with minimum boilerplate code. In other words, the library provides high level A
 
 ## Installation
 
-Python 3.6 or newer is supported.
+![Supported Python versions](https://img.shields.io/pypi/pyversions/mpl-events.svg)
 
 You can use pip to install mpl-events:
 
