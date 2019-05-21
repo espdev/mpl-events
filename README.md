@@ -79,8 +79,8 @@ In general, we do not need to think about it. We just pass `figure` instance to 
 
 We calls method `mpl_connect()` and it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
 
-If we want to use another methods (not base API that provides `MplEventDispatcher`) for 
-handling events we can use `mpl_event_handler` decorator inside our dispatcher class.
+If we want to use another methods (not `MplEventDispatcher` API) for handling events we can 
+use `mpl_event_handler` decorator inside our dispatcher class.
 
 ```python
 from mpl_events import MplEventDispatcher, MplEvent, mpl_event_handler, mpl
