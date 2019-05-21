@@ -1,7 +1,7 @@
 # mpl-events
 
 **mpl-events** is a tiny library for simple and convenient [matplotlib](https://matplotlib.org/) event handling 
-with minimum boilerplate code. The library provides high level API for using [matplotlib event system](https://matplotlib.org/users/event_handling.html).
+with minimum boilerplate code. In other words, the library provides high level API for using [matplotlib event system](https://matplotlib.org/users/event_handling.html).
 
 ## Pros and cons
 
@@ -20,9 +20,9 @@ with minimum boilerplate code. The library provides high level API for using [ma
 
 ## Installation
 
-We supprort Python 3.6 and newer.
+Python 3.6 or newer is supported.
 
-We can use pip to install mpl-events:
+You can use pip to install mpl-events:
 
 ```bash
 pip install mpl-events
@@ -74,10 +74,10 @@ plt.show()
 `MplEventDispatcher` class provides API (handler methods interface) for all matplotlib events. 
 You may override and implement some of these methods for handling corresponding events.
 
-A dispatcher might be connected to a canvas using mpl objects `figure` or `axes` (or `canvas`). 
+The dispatcher might be connected to a canvas using mpl objects `figure` or `axes` (or `canvas`). 
 In general, we do not need to think about it. We just pass `figure` instance to contructor usually.
 
-And it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
+We calls method `mpl_connect()` and it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
 
 If we want to use another methods (not base API that provides `MplEventDispatcher`) for 
 handling events we can use `mpl_event_handler` decorator inside our dispatcher class.
