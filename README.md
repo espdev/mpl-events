@@ -87,7 +87,7 @@ use `mpl_event_handler` decorator inside our dispatcher class.
 ```python
 from mpl_events import MplEventDispatcher, MplEvent, mpl_event_handler, mpl
 
-class MyDrawEventDispatcher(MplEventDispatcher):
+class CloseEventDispatcher(MplEventDispatcher):
 
     @mpl_event_handler(MplEvent.FIGURE_CLOSE)
     def _close_event_handler(self, event: mpl.CloseEvent):
