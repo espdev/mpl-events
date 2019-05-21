@@ -3,7 +3,7 @@
 import enum
 import weakref
 
-from typing import List, Optional
+from typing import List, Dict, Optional
 
 from .mpl import (
     FigureCanvas,
@@ -183,7 +183,7 @@ def mpl_event_handler(event_type: MplEvent):
 
         def __set_name__(self, owner, name):
             if 'mpl_event_handlers' not in owner.__dict__:
-                owner.mpl_event_handlers = {}
+                owner.mpl_event_handlers: Dict[MplEvent, str] = {}
             owner.mpl_event_handlers[event_type] = name
 
     return HandlerDescriptor
@@ -197,13 +197,11 @@ class MplEventDispatcher:
     Example:
 
         from matplotlib import pyplot as plt
-        from mpl_events import MplEventDispatcher, disable_default_key_press_handler, mpl
+        from mpl_events import MplEventDispatcher, mpl
 
         class KeyEventDispatcher(MplEventDispatcher):
 
-            def __init__(self, mpl_obj):
-                super().__init__(mpl_obj)
-                disable_default_key_press_handler(mpl_obj)
+            disable_default_handlers = True
 
             def on_key_press(self, event: mpl.KeyEvent):
                 print(f'Pressed key {event.key}')
@@ -213,16 +211,18 @@ class MplEventDispatcher:
 
         figure = plt.figure()
         dispatcher = KeyEventDispatcher(figure)
-        dispatcher.mpl_connect()
         plt.show()
     """
 
-    mpl_event_handlers = {}
+    mpl_event_handlers: Dict[MplEvent, str] = {}
+    disable_default_handlers: bool = False
 
-    def __init__(self, mpl_obj: MplObject_Type, connect: bool = False):
+    def __init__(self, mpl_obj: MplObject_Type, connect: bool = True):
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._mpl_connections = self._init_mpl_connections()
 
+        if self.disable_default_handlers:
+            disable_default_key_press_handler(mpl_obj)
         if connect:
             self.mpl_connect()
 

@@ -68,7 +68,6 @@ figure = plt.figure()
 # setup figure and make plots is here ...
 
 mouse_dispatcher = MouseEventDispatcher(figure)
-mouse_dispatcher.mpl_connect()
 
 plt.show()
 ```
@@ -78,8 +77,9 @@ You may override and implement some of these methods for handling corresponding 
 
 The dispatcher might be connected to a canvas using mpl objects `figure` or `axes` (or `canvas`). 
 In general, we do not need to think about it. We just pass `figure` instance to constructor usually.
+By default connection to events is made automatically. This behavior is controlled by `connect` argument.
 
-We calls method `mpl_connect()` and it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
+And it is all. We do not need to worry about connecting/disconnecting or remember mpl event names.
 
 If we want to use another methods (not `MplEventDispatcher` API) for handling events we can 
 use `mpl_event_handler` decorator inside our dispatcher class.
@@ -104,7 +104,7 @@ class MyEventDispatcherBase(MplEventDispatcher):
         print('figure closing from MyEventDispatcherBase')
 
 class MyEventDispatcher(MyEventDispatcherBase):
-    
+
     def on_figure_close(self, event: mpl.CloseEvent):
         super().on_figure_close(event)
         print('figure closing from MyEventDispatcher')
@@ -121,8 +121,9 @@ This class is high level wrapper for `figure.canvas.mpl_connect`/`figure.canvas.
 
 `MplEventConnection` can be used if we want to handle events and do not use event dispatcher interface.
 
-In this case we just create instance of `MplEventConnection` class and pass
+In this case we just create instance of `MplEventConnection` class and pass to constructor
 mpl object for connecting (`figure`, `axes` or `canvas`), event type as `MplEvent` enum and handler as callable.
+By default connection is made automatically. This behavior is controlled by `connect` argument.
 
 ```python
 from matplotlib import pyplot as plt
@@ -146,18 +147,19 @@ plt.show()
 Matplotlib figures usually contain navigation bar for some interactions with axes and this navigation bar handles key presses. 
 By default key press handler is connected in `FigureManagerBase` mpl class. 
 mpl-events provides `disable_default_key_press_handler` function to disconnect the default key press handler.
+Also in event dispatcher classes we can use `disable_default_handlers` attribute.
 
 Here is a simple example:
 
 ```python
 from matplotlib import pyplot as plt
-from mpl_events import MplEventDispatcher, disable_default_key_press_handler, mpl
+from mpl_events import MplEventDispatcher, mpl
 
 class KeyEventDispatcher(MplEventDispatcher):
+    disable_default_handlers = True
 
     def __init__(self, mpl_obj):
         super().__init__(mpl_obj)
-        disable_default_key_press_handler(mpl_obj)
 
     def on_key_press(self, event: mpl.KeyEvent):
         print(f'Pressed key {event.key}')
