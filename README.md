@@ -139,6 +139,38 @@ print(conn)
 plt.show()
 ```
 
+### Disable default key press event handler
+
+Matplotlib figures usually contain navigation bar for some interactions with axes and this navigation bar handles key presses. 
+By default key press handler is connected in `FigureManagerBase` mpl class. 
+mpl-events provides `disable_default_key_press_handler` function to disconnect the default key press handler.
+
+Here is a simple example:
+
+```python
+from matplotlib import pyplot as plt
+from mpl_events import MplEventDispatcher, disable_default_key_press_handler, mpl
+
+class KeyEventDispatcher(MplEventDispatcher):
+
+    def __init__(self, mpl_obj):
+        super().__init__(mpl_obj)
+        disable_default_key_press_handler(mpl_obj)
+
+    def on_key_press(self, event: mpl.KeyEvent):
+        print(f'Pressed key {event.key}')
+
+    def on_key_release(self, event: mpl.KeyEvent):
+        print(f'Released key {event.key}')
+
+figure = plt.figure()
+
+dispatcher = KeyEventDispatcher(figure)
+dispatcher.mpl_connect()
+
+plt.show()
+```
+
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
