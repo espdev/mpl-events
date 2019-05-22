@@ -36,7 +36,7 @@ setup(
     description='A tiny library for simple and convenient matplotlib event handling',
     long_description=_get_long_description(),
     long_description_content_type='text/markdown',
-    classifiers = [
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
