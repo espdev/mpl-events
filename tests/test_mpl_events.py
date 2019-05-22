@@ -3,7 +3,7 @@
 import pytest
 
 import matplotlib
-matplotlib.use('Agg')  # do not use a gui toolkit
+matplotlib.use('Agg')  # We do not use a gui toolkit for testing
 from matplotlib import pyplot
 
 from mpl_events import MplEvent, MplEventConnection, MplEventDispatcher, mpl_event_handler
