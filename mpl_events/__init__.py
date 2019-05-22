@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ._logging import logger
-
 from ._base import (
     MplEvent,
     MplEventConnection,
@@ -15,7 +13,7 @@ from ._types import (
     EventHandler_Type,
 )
 
-from .__version__ import __version__
+from .__version__ import __version__  # noqa
 
 
 __all__ = [
@@ -24,4 +22,6 @@ __all__ = [
     'MplEventDispatcher',
     'mpl_event_handler',
     'disable_default_key_press_handler',
+    'MplObject_Type',
+    'EventHandler_Type',
 ]
