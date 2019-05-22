@@ -12,7 +12,9 @@ from mpl_events import mpl
 
 @pytest.fixture
 def figure():
-    return pyplot.figure()
+    fig = pyplot.figure()
+    yield fig
+    pyplot.close(fig)
 
 
 PROCESS_EVENTS_PARAM = [
