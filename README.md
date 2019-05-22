@@ -183,3 +183,11 @@ dispatcher = KeyEventDispatcher(figure)
 
 plt.show()
 ```
+
+## Testing
+
+We use pytest and tox for testing.
+
+## Documentation
+
+Please see [the latest documentation](https://mpl-events.readthedocs.io/en/latest/).
