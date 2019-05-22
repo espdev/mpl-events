@@ -1,7 +1,8 @@
 # mpl-events
 
 [![PyPI version](https://img.shields.io/pypi/v/mpl-events.svg)](https://pypi.python.org/pypi/mpl-events)
-[![Build Status](https://travis-ci.org/espdev/mpl-events.svg?branch=master)](https://travis-ci.org/espdev/mpl-events)
+[![Build status](https://travis-ci.org/espdev/mpl-events.svg?branch=master)](https://travis-ci.org/espdev/mpl-events)
+[![Docs status](https://readthedocs.org/projects/mpl-events/badge/)](https://mpl-events.readthedocs.io/en/latest/)
 [![License](https://img.shields.io/pypi/l/mpl-events.svg)](LICENSE)
 
 **mpl-events** is a tiny library for simple and convenient [matplotlib](https://matplotlib.org/) event handling 
