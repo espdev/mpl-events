@@ -344,7 +344,7 @@ class MplEventDispatcher:
 
     disable_default_handlers: bool = False
     """If flag is True default handlers will be disabled
-    
+
     See Also
     --------
     disable_default_key_press_handler
