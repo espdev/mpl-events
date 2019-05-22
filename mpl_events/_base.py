@@ -28,33 +28,86 @@ from ._logging import logger
 
 
 class MplEvent(enum.Enum):
-    """The enum defines all actual matplotlib events
+    """Defines enumeration for all actual matplotlib events
 
-    value of enum item defines original matplotlib event name.
+    .. note::
+        The values of enum items represent original matplotlib event names.
+
     """
 
     KEY_PRESS = 'key_press_event'
+    """key is pressed"""
+
     KEY_RELEASE = 'key_release_event'
+    """key is released"""
+
     MOUSE_BUTTON_PRESS = 'button_press_event'
+    """mouse button is pressed"""
+
     MOUSE_BUTTON_RELEASE = 'button_release_event'
+    """mouse button is released"""
+
     MOUSE_MOVE = 'motion_notify_event'
+    """mouse motion"""
+
     MOUSE_WHEEL_SCROLL = 'scroll_event'
+    """mouse scroll wheel is rolled"""
+
     FIGURE_RESIZE = 'resize_event'
+    """figure canvas is resized"""
+
     FIGURE_ENTER = 'figure_enter_event'
+    """mouse enters a figure"""
+
     FIGURE_LEAVE = 'figure_leave_event'
+    """mouse leaves a figure"""
+
     FIGURE_CLOSE = 'close_event'
+    """a figure is closed"""
+
     AXES_ENTER = 'axes_enter_event'
+    """mouse enters a new axes"""
+
     AXES_LEAVE = 'axes_leave_event'
+    """mouse leaves an axes"""
+
     PICK = 'pick_event'
+    """an object in the canvas is selected"""
+
     DRAW = 'draw_event'
+    """canvas draw (but before screen update)"""
 
     def connection(self, mpl_obj: MplObject_Type, handler: EventHandler_Type,
                    connect: bool = True) -> 'MplEventConnection':
         """Creates connection between event with this type and handler and returns instance of MplEventConnection
 
-        This method is shortcut for `MplEventConnection` construction.
+        This method can be used as shortcut for `MplEventConnection` construction.
 
-        Example:
+        Parameters
+        ----------
+        mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
+            Matplotlib object: Figure, Axes or Canvas
+        handler : callable
+            Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+        connect : bool
+            If this flag is True, event and handler will be connected immediately
+
+        Returns
+        -------
+        conn : MplEventConnection
+            Connection object
+
+        Raises
+        ------
+        TypeError
+            If ``mpl_object`` has incorrect type.
+        ValueError
+            If mpl figure object has no a canvas.
+
+        Examples
+        --------
+
+        .. code-block:: python
 
             from matplotlib import pyplot as plt
             from mpl_events import MplEvent
@@ -65,6 +118,10 @@ class MplEvent(enum.Enum):
             figure = plt.figure()
             conn = MplEvent.FIGURE_CLOSE.connection(figure, close_handler)
             plt.show()
+
+        See Also
+        --------
+        MplEventConnection : Connection wrapper class
 
         """
         return MplEventConnection(mpl_obj, self, handler, connect)
@@ -93,6 +150,34 @@ class MplEventConnection:
     """Implements the connection to matplotlib event
 
     The class manages the connection between a matplotlib event and a handler callable.
+
+    This class is high level wrapper for ``canvas.mpl_connect``/``canvas.mpl_disconnect`` matplotlib API.
+
+    Parameters
+    ----------
+    mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
+        Matplotlib object: Figure, Axes or Canvas
+    event : MplEvent
+        Event type
+    handler : callable
+        Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+    connect : bool
+        If this flag is True, event and handler will be connected immediately
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        from mpl_events import MplEventConnection, MplEvent, mpl
+
+        def close_handler(event: mpl.CloseEvent):
+            print('figure closing')
+
+        figure = plt.figure()
+        conn = MplEventConnection(figure, MplEvent.FIGURE_CLOSE, close_handler)
+        plt.show()
+
     """
 
     def __init__(self, mpl_obj: MplObject_Type,
@@ -117,7 +202,7 @@ class MplEventConnection:
 
     @property
     def figure(self) -> WeakRefFigure_Type:
-        """Returns the ref to the related matplotlib figure
+        """Returns the reference to the related matplotlib figure
         """
         return self._figure()
 
@@ -143,18 +228,19 @@ class MplEventConnection:
     def valid(self) -> bool:
         """Retuns True if the connection is valid
 
-        The connection is valid if the related matplotlib figure has not been destroyed.
+        .. note::
+            The connection is valid if the related matplotlib figure has not been destroyed.
         """
         return self.figure is not None
 
     @property
     def connected(self) -> bool:
-        """Returns True if the handler callable is connected to the event
+        """Returns True if the handler is connected to the event
         """
         return self._id > 0 and self.valid
 
     def connect(self):
-        """Connects the matplotlib event and the handler callable
+        """Connects the handler to the event
         """
         if not self.valid:
             logger.error('Figure ref is dead')
@@ -169,7 +255,7 @@ class MplEventConnection:
                      self.event.value, self._handler, self._id)
 
     def disconnect(self):
-        """Disconnects the matplotlib event and the handler callable
+        """Disconnects the handler from the event
         """
         if not self.connected:
             return
@@ -183,12 +269,18 @@ class MplEventConnection:
 def mpl_event_handler(event_type: MplEvent):
     """Marks the decorated method as given matplotlib event handler
 
-    This decorator should be used only for methods of classes that
-    inherited from `MplEventDispatcher` class.
+    .. note::
+        This decorator should be used only for methods of classes that
+        inherited from `MplEventDispatcher` class.
 
-    You can use this decorator for reassignment event handlers in your dispatcher class.
+    This decorator can be used for reassignment event handlers in a dispatcher class.
 
-    Example:
+    Examples
+    --------
+
+    .. code-block:: python
+
+        from mpl_events import MplEventDispatcher, mpl_event_handler, mpl
 
         class MyEventDispatcher(MplEventDispatcher):
             @mpl_event_handler(MplEvent.KEY_PRESS)
@@ -213,9 +305,22 @@ def mpl_event_handler(event_type: MplEvent):
 class MplEventDispatcher:
     """The base dispatcher class for connecting and handling all matplotlib events
 
-    You can use this class as base class for your mpl event dispatcher.
+    You can use this class as base class for your matplotlib event dispatcher.
 
-    Example:
+    `MplEventDispatcher` class provides API (handler methods interface) for all matplotlib events.
+    You may override and implement some of these methods for handling corresponding events.
+
+    Parameters
+    ----------
+    mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
+        Matplotlib object: Figure, Axes or Canvas
+    connect : bool
+        If this flag is True, all events and handlers will be connected immediately
+
+    Examples
+    --------
+
+    .. code-block:: python
 
         from matplotlib import pyplot as plt
         from mpl_events import MplEventDispatcher, mpl
@@ -236,7 +341,14 @@ class MplEventDispatcher:
     """
 
     mpl_event_handlers: Dict[MplEvent, str] = {}
+
     disable_default_handlers: bool = False
+    """If flag is True default handlers will be disabled
+    
+    See Also
+    --------
+    disable_default_key_press_handler
+    """
 
     def __init__(self, mpl_obj: MplObject_Type, connect: bool = True):
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
@@ -271,7 +383,7 @@ class MplEventDispatcher:
 
     @property
     def figure(self) -> WeakRefFigure_Type:
-        """Returns the ref to the related matplotlib figure
+        """Returns the reference to the related matplotlib figure
         """
         return self._figure()
 
@@ -285,12 +397,12 @@ class MplEventDispatcher:
 
     @property
     def mpl_connections(self) -> List[MplEventConnection]:
-        """Returns the list of mpl_connections for this event dispatcher instance
+        """Returns the list of all connections for this event dispatcher instance
         """
         return self._mpl_connections
 
     def mpl_connect(self):
-        """Connects the matplotlib events to implemented event handlers for this instance
+        """Connects all the implemented event handlers to the related matplotlib events for this instance
         """
         if not self.valid:
             logger.error('The figure ref is dead')
@@ -301,7 +413,7 @@ class MplEventDispatcher:
             conn.connect()
 
     def mpl_disconnect(self):
-        """Disconnects the implemented handlers for the related matplotlib events for this instance
+        """Disconnects the implemented handlers from the related matplotlib events for this instance
         """
         if not self.valid:
             return
@@ -318,72 +430,72 @@ class MplEventDispatcher:
 
     @mpl_event_handler(MplEvent.KEY_PRESS)
     def on_key_press(self, event: KeyEvent):
-        """KeyEvent - key is pressed
+        """KeyEvent -- key is pressed
         """
 
     @mpl_event_handler(MplEvent.KEY_RELEASE)
     def on_key_release(self, event: KeyEvent):
-        """KeyEvent - key is released
+        """KeyEvent -- key is released
         """
 
     @mpl_event_handler(MplEvent.MOUSE_BUTTON_PRESS)
     def on_mouse_button_press(self, event: MouseEvent):
-        """MouseEvent - mouse button is pressed
+        """MouseEvent -- mouse button is pressed
         """
 
     @mpl_event_handler(MplEvent.MOUSE_BUTTON_RELEASE)
     def on_mouse_button_release(self, event: MouseEvent):
-        """MouseEvent - mouse button is released
+        """MouseEvent -- mouse button is released
         """
 
     @mpl_event_handler(MplEvent.MOUSE_MOVE)
     def on_mouse_move(self, event: MouseEvent):
-        """MouseEvent - mouse motion
+        """MouseEvent -- mouse motion
         """
 
     @mpl_event_handler(MplEvent.MOUSE_WHEEL_SCROLL)
     def on_mouse_wheel_scroll(self, event: MouseEvent):
-        """MouseEvent - mouse scroll wheel is rolled
+        """MouseEvent -- mouse scroll wheel is rolled
         """
 
     @mpl_event_handler(MplEvent.FIGURE_RESIZE)
     def on_figure_resize(self, event: ResizeEvent):
-        """ResizeEvent - figure canvas is resized
+        """ResizeEvent -- figure canvas is resized
         """
 
     @mpl_event_handler(MplEvent.FIGURE_ENTER)
     def on_figure_enter(self, event: LocationEvent):
-        """LocationEvent - mouse enters a new figure
+        """LocationEvent -- mouse enters a new figure
         """
 
     @mpl_event_handler(MplEvent.FIGURE_LEAVE)
     def on_figure_leave(self, event: LocationEvent):
-        """LocationEvent - mouse leaves a figure
+        """LocationEvent -- mouse leaves a figure
         """
 
     @mpl_event_handler(MplEvent.FIGURE_CLOSE)
     def on_figure_close(self, event: CloseEvent):
-        """CloseEvent - a figure is closed
+        """CloseEvent -- a figure is closed
         """
 
     @mpl_event_handler(MplEvent.AXES_ENTER)
     def on_axes_enter(self, event: LocationEvent):
-        """LocationEvent - mouse enters a new axes
+        """LocationEvent -- mouse enters a new axes
         """
 
     @mpl_event_handler(MplEvent.AXES_LEAVE)
     def on_axes_leave(self, event: LocationEvent):
-        """LocationEvent - mouse leaves an axes
+        """LocationEvent -- mouse leaves an axes
         """
 
     @mpl_event_handler(MplEvent.PICK)
     def on_pick(self, event: PickEvent):
-        """PickEvent - an object in the canvas is selected
+        """PickEvent -- an object in the canvas is selected
         """
 
     @mpl_event_handler(MplEvent.DRAW)
     def on_draw(self, event: DrawEvent):
-        """DrawEvent - canvas draw (but before screen update)
+        """DrawEvent -- canvas draw (but before screen update)
         """
 
 
