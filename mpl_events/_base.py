@@ -48,6 +48,27 @@ class MplEvent(enum.Enum):
     PICK = 'pick_event'
     DRAW = 'draw_event'
 
+    def connection(self, mpl_obj: MplObject_Type, handler: EventHandler_Type,
+                   connect: bool = True) -> 'MplEventConnection':
+        """Creates connection between event with this type and handler and returns instance of MplEventConnection
+
+        This method is shortcut for `MplEventConnection` construction.
+
+        Example:
+
+            from matplotlib import pyplot as plt
+            from mpl_events import MplEvent
+
+            def close_handler(event):
+                print('figure closing')
+
+            figure = plt.figure()
+            conn = MplEvent.FIGURE_CLOSE.connection(figure, close_handler)
+            plt.show()
+
+        """
+        return MplEventConnection(mpl_obj, self, handler, connect)
+
 
 def _get_mpl_figure(mpl_obj: MplObject_Type) -> Figure:
     if isinstance(mpl_obj, Axes):
@@ -219,7 +240,7 @@ class MplEventDispatcher:
 
     def __init__(self, mpl_obj: MplObject_Type, connect: bool = True):
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
-        self._mpl_connections = self._init_mpl_connections()
+        self._mpl_connections = self._make_mpl_connections()
 
         if self.disable_default_handlers:
             disable_default_key_press_handler(mpl_obj)
@@ -229,13 +250,13 @@ class MplEventDispatcher:
     def __del__(self):
         self.mpl_disconnect()
 
-    def _init_mpl_connections(self) -> List[MplEventConnection]:
+    def _make_mpl_connections(self) -> List[MplEventConnection]:
         conns = []
 
         for event, handler_name in self.mpl_event_handlers.items():
             handler = self._get_handler(handler_name)
             if handler:
-                conn = MplEventConnection(self.figure, event, handler, connect=False)
+                conn = event.connection(self.figure, handler, connect=False)
                 conns.append(conn)
 
         return conns
