@@ -121,7 +121,7 @@ class MplEvent(enum.Enum):
 
         See Also
         --------
-        MplEventConnection : Connection wrapper class
+        MplEventConnection
 
         """
         return MplEventConnection(mpl_obj, self, handler, connect)
@@ -163,6 +163,13 @@ class MplEventConnection:
         Event handler function/callable with signature: ``handler(event: mpl.Event)``.
     connect : bool
         If this flag is True, event and handler will be connected immediately
+
+    Raises
+    ------
+    TypeError
+        If ``mpl_object`` has incorrect type.
+    ValueError
+        If mpl figure object has no a canvas.
 
     Examples
     --------
@@ -228,8 +235,7 @@ class MplEventConnection:
     def valid(self) -> bool:
         """Retuns True if the connection is valid
 
-        .. note::
-            The connection is valid if the related matplotlib figure has not been destroyed.
+        The connection is valid if the related matplotlib figure has not been destroyed.
         """
         return self.figure is not None
 
@@ -271,7 +277,7 @@ def mpl_event_handler(event_type: MplEvent):
 
     .. note::
         This decorator should be used only for methods of classes that
-        inherited from `MplEventDispatcher` class.
+        inherited from :class:`MplEventDispatcher` class.
 
     This decorator can be used for reassignment event handlers in a dispatcher class.
 
@@ -317,7 +323,14 @@ class MplEventDispatcher:
     mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
         Matplotlib object: Figure, Axes or Canvas
     connect : bool
-        If this flag is True, all events and handlers will be connected immediately
+        If this flag is True (default), all events and handlers will be connected immediately
+
+    Raises
+    ------
+    TypeError
+        If ``mpl_object`` has incorrect type.
+    ValueError
+        If mpl figure object has no a canvas.
 
     Examples
     --------
@@ -382,6 +395,8 @@ class MplEventDispatcher:
                 if callable(handler):
                     logger.debug('Found event handler: %s', handler)
                     return handler
+                else:
+                    logger.warning('"%s": %s is not callable', handler_name, handler)
 
     @property
     def figure(self) -> WeakRefFigure_Type:
@@ -391,9 +406,9 @@ class MplEventDispatcher:
 
     @property
     def valid(self) -> bool:
-        """Retuns True if the connection is valid
+        """Retuns True if the dispatcher is valid
 
-        The connection is valid if the related matplotlib figure has not been destroyed.
+        The dispatcher is valid if the related matplotlib figure has not been destroyed.
         """
         return self.figure is not None
 
@@ -404,7 +419,7 @@ class MplEventDispatcher:
         return self._mpl_connections
 
     def mpl_connect(self):
-        """Connects all the implemented event handlers to the related matplotlib events for this instance
+        """Connects the implemented event handlers to the related matplotlib events for this instance
         """
         if not self.valid:
             logger.error('The figure ref is dead')
