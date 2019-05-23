@@ -6,17 +6,21 @@
 [![License](https://img.shields.io/pypi/l/mpl-events.svg)](LICENSE)
 
 **mpl-events** is a tiny library for simple and convenient [matplotlib](https://matplotlib.org/) event handling 
-with minimum boilerplate code. In other words, the library provides high level API for using [matplotlib event system](https://matplotlib.org/users/event_handling.html).
+with minimum boilerplate code. In other words, the library provides high-level API for using [matplotlib event system](https://matplotlib.org/users/event_handling.html).
+
+You need to handling matplotlib events if you want to manipulate figures and plots/visualizations interactively.
+Matplotlib contains a low-level API for event handling: using ``FigureCanvasBase.mpl_connect`` and
+``FigureCanvasBase.mpl_disconnect`` methods, string-based event names and integer connection identifiers.
 
 ## Pros and cons
 
 **Pros**:
 
-* We do not use raw strings for event names. Intstead, we use `MplEvent` enum class for all events.
-* We do not use integer id for connection. Instead, connection between event and handler incapsulated via class `MplEventConnection`
-* mpl-events objects do not own figures and do not create additional references to figures
-* mpl-events provides convenient base class `MplEventDispatcher` and handlers API for handling all mpl events inside one class without boilerplate code
-* mpl-events provides high level API, auto disconnecting and cleanup
+* mpl-events provides high-level API, auto disconnecting and cleanup
+* Strings-based event types/names are not used. Intstead, `MplEvent` enum class is used for all event types.
+* Integer connection identifiers are not used. Instead, the connection between event and handler is incapsulated via class `MplEventConnection`
+* mpl-events objects do not own mpl figure and do not create additional references to figure or canvas
+* mpl-events provides convenient base class `MplEventDispatcher` that contains handlers API (with type-hints) for handling all mpl events inside one class without boilerplate code
 
 **Cons**:
 
