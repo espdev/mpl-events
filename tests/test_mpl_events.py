@@ -55,7 +55,7 @@ def test_event_connection(figure, event: MplEvent):
     def event_handler(e):
         pass
 
-    connection = MplEventConnection(figure, event, event_handler)
+    connection = MplEventConnection(figure, event, event_handler, connect=False)
 
     connection.connect()
     assert connection.connected
@@ -73,10 +73,9 @@ def test_handle_event(figure, event_type, process_event):
         event = e.name
 
     connection = MplEventConnection(figure, event_type, event_handler)
-    connection.connect()
+    assert connection.connected
 
     process_event(figure.canvas)
-
     assert event == event_type.value
 
 
@@ -133,7 +132,6 @@ def test_event_dispatcher(figure, event_type, process_event):
                 self.latest_event = event.name
 
     dispatcher = EventDispatcher(figure)
-    dispatcher.mpl_connect()
 
     process_event(figure.canvas)
 
@@ -153,7 +151,6 @@ def test_event_dispatcher_inheritance(figure):
             self.latest_events.append(event.name)
 
     dispatcher = EventDispatcher2(figure)
-    dispatcher.mpl_connect()
 
     figure.canvas.key_press_event(None)
     figure.canvas.key_release_event(None)
@@ -171,7 +168,25 @@ def test_event_dispatcher_change_handler(figure):
             self.latest_event = event.name
 
     dispatcher = EventDispatcher(figure)
-    dispatcher.mpl_connect()
+
+    figure.canvas.key_press_event(None)
+
+    assert dispatcher.latest_event == MplEvent.KEY_PRESS.value
+
+
+def test_event_dispatcher_change_handler_inheritance(figure):
+    class EventDispatcherBase(MplEventDispatcher):
+        latest_event = None
+
+        @mpl_event_handler(MplEvent.KEY_PRESS)
+        def on_key_press_custom(self, event):
+            self.latest_event = event.name
+
+    class EventDispatcher(EventDispatcherBase):
+        def on_key_press_custom(self, event):
+            super().on_key_press_custom(event)
+
+    dispatcher = EventDispatcher(figure)
 
     figure.canvas.key_press_event(None)
 
@@ -193,10 +208,7 @@ def test_several_event_dispatchers(figure):
             self.latest_event = event.name
 
     dispatcher1 = EventDispatcher1(figure)
-    dispatcher1.mpl_connect()
-
     dispatcher2 = EventDispatcher2(figure)
-    dispatcher2.mpl_connect()
 
     figure.canvas.key_press_event(None)
 
