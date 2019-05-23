@@ -288,6 +288,8 @@ def mpl_event_handler(event_type: MplEvent):
                 pass
     """
     class HandlerDescriptor:
+        """Adds handler method name to event handlers mapping
+        """
         def __init__(self, handler):
             self.handler = handler
 
@@ -503,6 +505,12 @@ def disable_default_key_press_handler(mpl_obj: MplObject_Type):
     """Disables default key_press handling for given figure/canvas
 
     The default key handler using the toolmanager.
+
+    Parameters
+    ----------
+    mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
+        Matplotlib object: Figure, Axes or Canvas
+
     """
     figure = _get_mpl_figure(mpl_obj)
     cid = figure.canvas.manager.key_press_handler_id
