@@ -149,14 +149,14 @@ print(conn)
 plt.show()
 ```
 
-Also we can use the shortcut for `MplEventConnection` constuction using `connection` method of `MplEvent` class:
+Also we can use the shortcut for `MplEventConnection` constuction using `make_connection` method of `MplEvent` class:
 
 ```python
 from mpl_events import MplEvent
 
 ...
 
-conn = MplEvent.FIGURE_CLOSE.connection(figure, close_handler)
+conn = MplEvent.FIGURE_CLOSE.make_connection(figure, close_handler)
 ```
 
 ### Disable default key press event handler

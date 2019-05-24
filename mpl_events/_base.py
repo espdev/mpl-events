@@ -77,8 +77,8 @@ class MplEvent(enum.Enum):
     DRAW = 'draw_event'
     """canvas draw (but before screen update)"""
 
-    def connection(self, mpl_obj: MplObject_Type, handler: EventHandler_Type,
-                   connect: bool = True) -> 'MplEventConnection':
+    def make_connection(self, mpl_obj: MplObject_Type, handler: EventHandler_Type,
+                        connect: bool = True) -> 'MplEventConnection':
         """Creates connection between event with this type and handler and returns instance of MplEventConnection
 
         This method can be used as shortcut for `MplEventConnection` construction.
@@ -116,7 +116,7 @@ class MplEvent(enum.Enum):
                 print('figure closing')
 
             figure = plt.figure()
-            conn = MplEvent.FIGURE_CLOSE.connection(figure, close_handler)
+            conn = MplEvent.FIGURE_CLOSE.make_connection(figure, close_handler)
             plt.show()
 
         See Also
@@ -383,7 +383,7 @@ class MplEventDispatcher:
         for event, handler_name in self.mpl_event_handlers.items():
             handler = self._get_handler(handler_name)
             if handler:
-                conn = event.connection(self.figure, handler, connect=False)
+                conn = event.make_connection(self.figure, handler, connect=False)
                 conns.append(conn)
 
         return conns

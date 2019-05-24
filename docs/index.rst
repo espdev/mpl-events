@@ -69,7 +69,7 @@ Event connection to handle figure closing:
          print('figure closing')
 
       figure = plt.figure()
-      conn = MplEvent.FIGURE_CLOSE.connection(figure, close_handler)
+      conn = MplEvent.FIGURE_CLOSE.make_connection(figure, close_handler)
       plt.show()
 
 API Reference
