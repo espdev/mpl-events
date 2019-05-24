@@ -164,6 +164,15 @@ class MplEventConnection:
     connect : bool
         If this flag is True, event and handler will be connected immediately
 
+    Attributes
+    ----------
+    figure
+    event
+    handler
+    id
+    valid
+    connected
+
     Raises
     ------
     TypeError
@@ -210,24 +219,44 @@ class MplEventConnection:
     @property
     def figure(self) -> WeakRefFigure_Type:
         """Returns the reference to the related matplotlib figure
+
+        Returns
+        -------
+        figure : Figure
+            Matplotlib figure that is related to this connection
         """
         return self._figure()
 
     @property
     def event(self) -> MplEvent:
         """Returns matplotlib event type as MplEvent enum item
+
+        Returns
+        -------
+        event : :class:`MplEvent`
+            Event type that is related to this connection
         """
         return self._event
 
     @property
     def handler(self) -> EventHandler_Type:
         """Returns the event handler callable
+
+        Returns
+        -------
+        handler : callable
+            Event handler callable that is related to this connection
         """
         return self._handler
 
     @property
     def id(self) -> int:
         """Returns matplotlib event connection id
+
+        Returns
+        -------
+        id : int
+            Matplotlib connection identifier
         """
         return self._id
 
@@ -236,12 +265,21 @@ class MplEventConnection:
         """Retuns True if the connection is valid
 
         The connection is valid if the related matplotlib figure has not been destroyed.
+
+        Returns
+        valid : bool
+            True if the connection is valid
         """
         return self.figure is not None
 
     @property
     def connected(self) -> bool:
         """Returns True if the handler is connected to the event
+
+        Returns
+        -------
+        connected : bool
+            True if the handler is connected to the event
         """
         return self._id > 0 and self.valid
 
@@ -325,6 +363,12 @@ class MplEventDispatcher:
     connect : bool
         If this flag is True (default), all events and handlers will be connected immediately
 
+    Attributes
+    ----------
+    figure
+    valid
+    mpl_connections
+
     Raises
     ------
     TypeError
@@ -401,6 +445,11 @@ class MplEventDispatcher:
     @property
     def figure(self) -> WeakRefFigure_Type:
         """Returns the reference to the related matplotlib figure
+
+        Returns
+        -------
+        figure : Figure
+            Matplotlib figure that is related to this dispatcher
         """
         return self._figure()
 
@@ -409,12 +458,21 @@ class MplEventDispatcher:
         """Retuns True if the dispatcher is valid
 
         The dispatcher is valid if the related matplotlib figure has not been destroyed.
+
+        Returns
+        valid : bool
+            True if the dispatcher is valid
         """
         return self.figure is not None
 
     @property
     def mpl_connections(self) -> List[MplEventConnection]:
         """Returns the list of all connections for this event dispatcher instance
+
+        Returns
+        -------
+        mpl_connections : List[MplEventConnection]
+            The list of all connections for this event dispatcher instance
         """
         return self._mpl_connections
 
