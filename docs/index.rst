@@ -76,9 +76,10 @@ API Reference
 -------------
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   api
+    api
+    changelog
 
 
 Indices and tables
