@@ -73,12 +73,19 @@ Event connection to handle figure closing:
       plt.show()
 
 API Reference
--------------
+=============
 
 .. toctree::
     :maxdepth: 2
 
     api
+
+Changelog
+=========
+
+.. toctree::
+    :maxdepth: 1
+
     changelog
 
 
