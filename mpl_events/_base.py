@@ -421,14 +421,14 @@ class MplEventDispatcher:
     def __del__(self):
         self.mpl_disconnect()
 
-    def _make_mpl_connections(self) -> List[MplEventConnection]:
-        conns = []
+    def _make_mpl_connections(self) -> Dict[MplEvent, MplEventConnection]:
+        conns = {}
 
         for event, handler_name in self.mpl_event_handlers.items():
             handler = self._get_handler(handler_name)
             if handler:
                 conn = event.make_connection(self.figure, handler, connect=False)
-                conns.append(conn)
+                conns[event] = conn
 
         return conns
 
@@ -466,13 +466,20 @@ class MplEventDispatcher:
         return self.figure is not None
 
     @property
-    def mpl_connections(self) -> List[MplEventConnection]:
-        """Returns the list of all connections for this event dispatcher instance
+    def mpl_connections(self) -> Dict[MplEvent, MplEventConnection]:
+        """Returns the mapping for all connections for this event dispatcher instance
+
+        Returns mapping in this form::
+
+            {
+                event_type1: connection1,
+                event_type2: connection2,
+            }
 
         Returns
         -------
-        mpl_connections : List[MplEventConnection]
-            The list of all connections for this event dispatcher instance
+        mpl_connections : Dict[MplEvent, MplEventConnection]
+            The mapping for all connections for this event dispatcher instance
         """
         return self._mpl_connections
 
@@ -484,7 +491,7 @@ class MplEventDispatcher:
             return
 
         self.mpl_disconnect()
-        for conn in self._mpl_connections:
+        for conn in self._mpl_connections.values():
             conn.connect()
 
     def mpl_disconnect(self):
@@ -493,7 +500,7 @@ class MplEventDispatcher:
         if not self.valid:
             return
 
-        for conn in self._mpl_connections:
+        for conn in self._mpl_connections.values():
             conn.disconnect()
 
     # ########################################################################
