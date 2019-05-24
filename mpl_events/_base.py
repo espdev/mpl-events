@@ -3,7 +3,7 @@
 import enum
 import weakref
 
-from typing import List, Dict, Optional
+from typing import Dict, Optional
 
 from .mpl import (
     FigureCanvas,
