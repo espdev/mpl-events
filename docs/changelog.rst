@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.0.6
+------
+
+* Bump matplotlib version: >=2.0,<3.2
+
 v0.0.5
 ------
 
