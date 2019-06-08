@@ -4,6 +4,9 @@
 Usage
 *****
 
+.. contents:: Contents
+    :local:
+
 Event dispatchers
 =================
 
