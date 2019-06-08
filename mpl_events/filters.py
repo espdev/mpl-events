@@ -22,8 +22,8 @@ class LoggingEventFilter:
         logger.info('%s (%s) %s', obj, MplEvent(event.name), event)
 
 
-class DoubleClickReleaseEventFilter:
-    """Sets correct value of dblclick flag to MOUSE_BUTTON_RELEASE
+class MouseDoubleClickReleaseEventFilter:
+    """Sets correct value of dblclick flag to MOUSE_BUTTON_RELEASE event
 
     The filter adds  true ``dblclick`` flag to ``MOUSE_BUTTON_RELEASE`` event
     if ``dblclick`` is True in previous ``MOUSE_BUTTON_PRESS`` event.
