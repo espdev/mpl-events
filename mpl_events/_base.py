@@ -561,7 +561,8 @@ class MplEventDispatcher:
             Event filter callable
         """
         if not callable(filter_obj):
-            raise TypeError('Invalid filter object. The filter object must be callable')
+            raise TypeError(
+                f'Invalid event filter type "{type(filter_obj)}". The event filter must be callable')
 
         if not self._event_filters:
             self.mpl_disconnect()
