@@ -497,17 +497,6 @@ class MplEventDispatcher:
     def event_filter(self) -> EventFilter_Type:
         """Returns event filter callable or None if a filter was not set
 
-        Returns
-        -------
-        event_filter: callable, None
-            Event filter callable or None if a filter was not set
-        """
-        return self._event_filter
-
-    @event_filter.setter
-    def event_filter(self, filter_obj: EventFilter_Type):
-        """Sets event filter callable or None for reset filter
-
         The event filter can be used for filtering mpl events in a dispatcher class.
 
         Examples
@@ -526,11 +515,22 @@ class MplEventDispatcher:
                     # do something...
 
                     # If the filter returns True, the handler for the event
-                    # in the "Dispatcher" class is not called
+                    # in "Dispatcher" class is not called
                     return True
 
             dispatcher = Dispatcher()
             dispatcher.event_filter = event_filter
+
+        Returns
+        -------
+        event_filter: callable, None
+            Event filter callable or None if a filter was not set
+        """
+        return self._event_filter
+
+    @event_filter.setter
+    def event_filter(self, filter_obj: EventFilter_Type):
+        """Sets event filter callable or None for reset filter
 
         Parameters
         ----------
