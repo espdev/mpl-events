@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.0.7
+------
+
+* Fix creating event handlers mapping when ``mpl_event_handler`` was used in subclass
+
 v0.0.6
 ------
 
