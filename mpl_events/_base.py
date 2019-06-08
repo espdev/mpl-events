@@ -499,7 +499,7 @@ class MplEventDispatcher:
 
     @property
     def event_filters(self) -> List[EventFilter_Type]:
-        """Returns list of event filters that was set for this dispatcher
+        """Returns list of event filters that have been set for this dispatcher
 
         Returns
         -------
