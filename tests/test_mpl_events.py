@@ -159,58 +159,71 @@ def test_event_dispatcher_inheritance(figure):
 
 
 def test_event_dispatcher_change_handler(figure):
-
     class EventDispatcher(MplEventDispatcher):
-        latest_event = None
+        latest_event = []
 
         @mpl_event_handler(MplEvent.KEY_PRESS)
         def on_key_press_custom(self, event):
-            self.latest_event = event.name
+            self.latest_event.append(event.name)
+
+        def on_key_release(self, event):
+            self.latest_event.append(event.name)
 
     dispatcher = EventDispatcher(figure)
 
     figure.canvas.key_press_event(None)
+    figure.canvas.key_release_event(None)
 
-    assert dispatcher.latest_event == MplEvent.KEY_PRESS.value
+    assert dispatcher.latest_event == [MplEvent.KEY_PRESS.value, MplEvent.KEY_RELEASE.value]
 
 
 def test_event_dispatcher_change_handler_inheritance(figure):
     class EventDispatcherBase(MplEventDispatcher):
-        latest_event = None
+        latest_event = []
 
         @mpl_event_handler(MplEvent.KEY_PRESS)
         def on_key_press_custom(self, event):
-            self.latest_event = event.name
+            self.latest_event.append(event.name)
+
+        def on_key_release(self, event):
+            self.latest_event.append(event.name)
 
     class EventDispatcher(EventDispatcherBase):
         def on_key_press_custom(self, event):
             super().on_key_press_custom(event)
 
+        def on_key_release(self, event):
+            super().on_key_release(event)
+
     dispatcher = EventDispatcher(figure)
 
     figure.canvas.key_press_event(None)
+    figure.canvas.key_release_event(None)
 
-    assert dispatcher.latest_event == MplEvent.KEY_PRESS.value
+    assert dispatcher.latest_event == [MplEvent.KEY_PRESS.value, MplEvent.KEY_RELEASE.value]
 
 
 def test_several_event_dispatchers(figure):
-    class EventDispatcher1(MplEventDispatcher):
-        latest_event = None
+    class EventDispatcherBase(MplEventDispatcher):
+        latest_event = []
 
+    class EventDispatcher1(EventDispatcherBase):
         @mpl_event_handler(MplEvent.KEY_PRESS)
         def on_key_press_custom(self, event):
-            self.latest_event = event.name
+            self.latest_event.append(event.name)
 
-    class EventDispatcher2(MplEventDispatcher):
-        latest_event = None
-
+    class EventDispatcher2(EventDispatcherBase):
         def on_key_press(self, event):
-            self.latest_event = event.name
+            self.latest_event.append(event.name)
+
+    class EventDispatcher3(EventDispatcherBase):
+        def on_key_press(self, event):
+            self.latest_event.append(event.name)
 
     dispatcher1 = EventDispatcher1(figure)
     dispatcher2 = EventDispatcher2(figure)
+    dispatcher3 = EventDispatcher3(figure)
 
     figure.canvas.key_press_event(None)
 
-    assert dispatcher1.latest_event == MplEvent.KEY_PRESS.value
-    assert dispatcher2.latest_event == MplEvent.KEY_PRESS.value
+    assert EventDispatcherBase.latest_event == [MplEvent.KEY_PRESS.value] * 3
