@@ -559,6 +559,10 @@ class MplEventDispatcher:
         ----------
         filter_obj: callable
             Event filter callable
+
+        Raises
+        ------
+        TypeError : If filter_obj is not callable
         """
         if not callable(filter_obj):
             raise TypeError(
