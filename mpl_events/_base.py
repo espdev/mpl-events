@@ -528,7 +528,7 @@ class MplEventDispatcher:
         for conn in self._mpl_connections.values():
             conn.disconnect()
 
-    def add_event_filter(self, filter_obj: EventFilter_Type):
+    def add_event_filter(self, filter_obj: EventFilter_Type, prepend: bool = False):
         """Adds the event filter for this dispatcher
 
         The event filters can be used for filtering mpl events in a dispatcher class.
@@ -559,6 +559,8 @@ class MplEventDispatcher:
         ----------
         filter_obj: callable
             Event filter callable
+        prepend: bool
+            Add filter to begin of list instead of append to end
 
         Raises
         ------
@@ -577,7 +579,10 @@ class MplEventDispatcher:
                     self.figure, self._event_filter_proxy, connect=conn.connected)
                 conn.disconnect()
 
-        self._event_filters.append(filter_obj)
+        if prepend:
+            self._event_filters.insert(0, filter_obj)
+        else:
+            self._event_filters.append(filter_obj)
 
     def remove_event_filter(self, filter_obj: EventFilter_Type):
         """Removes the event filter for this dispatcher
