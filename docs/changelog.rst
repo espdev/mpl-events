@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.1.0
+------
+
+* Add event filtering mechanism in event dispatcher classes
+
 v0.0.7
 ------
 

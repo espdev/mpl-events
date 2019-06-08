@@ -1,5 +1,10 @@
-API Documentation
-=================
+.. _api:
+
+API
+===
+
+.. contents:: Contents
+    :local:
 
 mpl_events
 ----------
@@ -16,3 +21,9 @@ mpl_events
 .. automodule:: mpl_events
     :members:
     :show-inheritance:
+
+mpl_events.filters
+------------------
+
+.. automodule:: mpl_events.filters
+    :members:

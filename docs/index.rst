@@ -72,20 +72,14 @@ Event connection to handle figure closing:
       conn = MplEvent.FIGURE_CLOSE.make_connection(figure, close_handler)
       plt.show()
 
-API Reference
-=============
-
-.. toctree::
-    :maxdepth: 2
-
-    api
-
-Changelog
+Reference
 =========
 
 .. toctree::
     :maxdepth: 1
 
+    usage
+    api
     changelog
 
 

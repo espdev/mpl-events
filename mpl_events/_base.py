@@ -3,7 +3,7 @@
 import enum
 import weakref
 
-from typing import Dict, Optional
+from typing import Optional, Dict, List
 
 from .mpl import (
     FigureCanvas,
@@ -20,7 +20,9 @@ from .mpl import (
 
 from ._types import (
     MplObject_Type,
+    MplEvent_Type,
     EventHandler_Type,
+    EventFilter_Type,
     WeakRefFigure_Type,
 )
 
@@ -88,7 +90,7 @@ class MplEvent(enum.Enum):
         mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
             Matplotlib object: Figure, Axes or Canvas
         handler : callable
-            Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+            Event handler function/callable with signature: ``handler(event: MplEvent_Type)``.
         connect : bool
             If this flag is True, event and handler will be connected immediately
 
@@ -160,7 +162,7 @@ class MplEventConnection:
     event : MplEvent
         Event type
     handler : callable
-        Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+        Event handler function/callable with signature: ``handler(event: MplEvent_Type)``.
     connect : bool
         If this flag is True, event and handler will be connected immediately
 
@@ -267,6 +269,7 @@ class MplEventConnection:
         The connection is valid if the related matplotlib figure has not been destroyed.
 
         Returns
+        -------
         valid : bool
             True if the connection is valid
         """
@@ -368,6 +371,7 @@ class MplEventDispatcher:
     figure
     valid
     mpl_connections
+    event_filter
 
     Raises
     ------
@@ -413,6 +417,9 @@ class MplEventDispatcher:
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._mpl_connections = self._make_mpl_connections()
 
+        self._event_filters: List[EventFilter_Type] = []
+        self._orig_mpl_connections = {}
+
         if self.disable_default_handlers:
             disable_default_key_press_handler(mpl_obj)
         if connect:
@@ -442,6 +449,12 @@ class MplEventDispatcher:
                 else:
                     logger.warning('"%s": %s is not callable', handler_name, handler)
 
+    def _event_filter_proxy(self, event: MplEvent_Type):
+        for event_filter in self._event_filters:
+            if event_filter(self, event):
+                return
+        self._orig_mpl_connections[MplEvent(event.name)].handler(event)
+
     @property
     def figure(self) -> WeakRefFigure_Type:
         """Returns the reference to the related matplotlib figure
@@ -460,6 +473,7 @@ class MplEventDispatcher:
         The dispatcher is valid if the related matplotlib figure has not been destroyed.
 
         Returns
+        -------
         valid : bool
             True if the dispatcher is valid
         """
@@ -483,6 +497,17 @@ class MplEventDispatcher:
         """
         return self._mpl_connections
 
+    @property
+    def event_filters(self) -> List[EventFilter_Type]:
+        """Returns list of event filters that have been set for this dispatcher
+
+        Returns
+        -------
+        event_filters: List[callable]
+            List of event filter callables
+        """
+        return self._event_filters
+
     def mpl_connect(self):
         """Connects the implemented event handlers to the related matplotlib events for this instance
         """
@@ -502,6 +527,89 @@ class MplEventDispatcher:
 
         for conn in self._mpl_connections.values():
             conn.disconnect()
+
+    def add_event_filter(self, filter_obj: EventFilter_Type, prepend: bool = False):
+        """Adds the event filter for this dispatcher
+
+        The event filters can be used for filtering mpl events in a dispatcher class.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            class Dispatcher(MplEventDispatcher):
+                def on_key_press(self, event: mpl.KeyEvent):
+                    pass
+                def on_key_release(self, event: mpl.KeyEvent):
+                    pass
+
+            def event_filter(obj: MplEventDispatcher, event: MplEvent_Type):
+                if isinstance(obj, Dispatcher) and event.name == MplEvent.KEY_PRESS.value:
+                    # do something...
+
+                    # If the filter returns True, the handler for the event
+                    # in "Dispatcher" class will not be called
+                    return True
+
+            dispatcher = Dispatcher(figure)
+            dispatcher.add_event_filter(event_filter)
+
+        Parameters
+        ----------
+        filter_obj: callable
+            Event filter callable
+        prepend: bool
+            Add filter to begin of list instead of append to end
+
+        Raises
+        ------
+        TypeError : If filter_obj is not callable
+        """
+        if not callable(filter_obj):
+            raise TypeError(
+                f'Invalid event filter type "{type(filter_obj)}". The event filter must be callable')
+
+        if not self._event_filters:
+            self._orig_mpl_connections = self._mpl_connections
+            self._mpl_connections = {}
+
+            for event, conn in self._orig_mpl_connections.items():
+                self._mpl_connections[event] = event.make_connection(
+                    self.figure, self._event_filter_proxy, connect=conn.connected)
+                conn.disconnect()
+
+        if prepend:
+            self._event_filters.insert(0, filter_obj)
+        else:
+            self._event_filters.append(filter_obj)
+
+    def remove_event_filter(self, filter_obj: EventFilter_Type):
+        """Removes the event filter for this dispatcher
+
+        The request is ignored if such an event filter has not been added.
+
+        Parameters
+        ----------
+        filter_obj: callable
+            Event filter callable
+        """
+        if filter_obj not in self._event_filters:
+            logger.warning('%s is not event filter', filter_obj)
+            return
+
+        self._event_filters.remove(filter_obj)
+
+        if not self._event_filters:
+            event_connected = [(event, conn.connected()) for event, conn in self._mpl_connections.items()]
+            self.mpl_disconnect()
+
+            self._mpl_connections = self._orig_mpl_connections
+            self._orig_mpl_connections = {}
+
+            for event, connected in event_connected:
+                if connected:
+                    self._mpl_connections[event].connect()
 
     # ########################################################################
     # The methods below define API for handling matplotlib events.
