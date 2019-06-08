@@ -586,6 +586,7 @@ class MplEventDispatcher:
             Event filter callable
         """
         if filter_obj not in self._event_filters:
+            logger.warning('%s is not event filter', filter_obj)
             return
 
         self._event_filters.remove(filter_obj)
