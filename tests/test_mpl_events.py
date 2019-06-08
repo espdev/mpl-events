@@ -227,3 +227,26 @@ def test_several_event_dispatchers(figure):
     figure.canvas.key_press_event(None)
 
     assert EventDispatcherBase.latest_event == [MplEvent.KEY_PRESS.value] * 3
+
+
+@pytest.mark.parametrize('filter_flag, expected', [
+    (False, ['filtered', MplEvent.KEY_PRESS.value]),
+    (True, ['filtered']),
+])
+def test_event_filter(figure, filter_flag, expected):
+    class EventDispatcher(MplEventDispatcher):
+        latest_event = []
+
+        def on_key_press(self, event):
+            self.latest_event.append(event.name)
+
+    def event_filter(obj, event):
+        obj.latest_event.append('filtered')
+        return filter_flag
+
+    dispatcher = EventDispatcher(figure)
+    dispatcher.event_filter = event_filter
+
+    figure.canvas.key_press_event(None)
+
+    assert dispatcher.latest_event == expected

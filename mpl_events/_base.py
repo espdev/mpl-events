@@ -9,6 +9,7 @@ from .mpl import (
     FigureCanvas,
     Figure,
     Axes,
+    Event,
     KeyEvent,
     MouseEvent,
     PickEvent,
@@ -21,6 +22,7 @@ from .mpl import (
 from ._types import (
     MplObject_Type,
     EventHandler_Type,
+    EventFilter_Type,
     WeakRefFigure_Type,
 )
 
@@ -368,6 +370,7 @@ class MplEventDispatcher:
     figure
     valid
     mpl_connections
+    event_filter
 
     Raises
     ------
@@ -413,6 +416,9 @@ class MplEventDispatcher:
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._mpl_connections = self._make_mpl_connections()
 
+        self._event_filter: EventFilter_Type = None
+        self._orig_mpl_connections = {}
+
         if self.disable_default_handlers:
             disable_default_key_press_handler(mpl_obj)
         if connect:
@@ -441,6 +447,10 @@ class MplEventDispatcher:
                     return handler
                 else:
                     logger.warning('"%s": %s is not callable', handler_name, handler)
+
+    def _event_filter_proxy(self, event: Event):
+        if not self._event_filter(self, event):
+            self._orig_mpl_connections[MplEvent(event.name)].handler(event)
 
     @property
     def figure(self) -> WeakRefFigure_Type:
@@ -482,6 +492,75 @@ class MplEventDispatcher:
             The mapping for all connections for this event dispatcher instance
         """
         return self._mpl_connections
+
+    @property
+    def event_filter(self) -> EventFilter_Type:
+        """Returns event filter callable or None if a filter was not set
+
+        Returns
+        -------
+        event_filter: callable, None
+            Event filter callable or None if a filter was not set
+        """
+        return self._event_filter
+
+    @event_filter.setter
+    def event_filter(self, filter_obj: EventFilter_Type):
+        """Sets event filter callable or None for reset filter
+
+        The event filter can be used for filtering mpl events in a dispatcher class.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            class Dispatcher(MplEventDispatcher):
+                def on_key_press(self, event: mpl.KeyEvent):
+                    pass
+                def on_key_release(self, event: mpl.KeyEvent):
+                    pass
+
+            def event_filter(obj: MplEventDispatcher, event: mpl.Event):
+                if isinstance(obj, Dispatcher) and event.name == MplEvent.KEY_PRESS.value:
+                    # do something...
+
+                    # If the filter returns True, the handler for the event
+                    # in the "Dispatcher" class is not called
+                    return True
+
+            dispatcher = Dispatcher()
+            dispatcher.event_filter = event_filter
+
+        Parameters
+        ----------
+        filter_obj : callable, None
+            Event filter callable or None for reset filter
+        """
+        if callable(filter_obj):
+            self.event_filter = None  # reset filter
+            self._event_filter = filter_obj
+
+            self.mpl_disconnect()
+            self._orig_mpl_connections = self._mpl_connections
+            self._mpl_connections = {}
+
+            for event in self._orig_mpl_connections:
+                self._mpl_connections[event] = event.make_connection(
+                    self.figure, self._event_filter_proxy)
+
+        elif filter_obj is None:
+            if self._event_filter is None:
+                return
+
+            self.mpl_disconnect()
+            self._mpl_connections = self._orig_mpl_connections
+            self._orig_mpl_connections = {}
+            self._event_filter = None
+            self.mpl_connect()
+
+        else:
+            raise TypeError('Invalid filter object. The filter object must be callable or None')
 
     def mpl_connect(self):
         """Connects the implemented event handlers to the related matplotlib events for this instance
