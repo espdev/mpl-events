@@ -9,7 +9,6 @@ from .mpl import (
     FigureCanvas,
     Figure,
     Axes,
-    Event,
     KeyEvent,
     MouseEvent,
     PickEvent,
@@ -21,6 +20,7 @@ from .mpl import (
 
 from ._types import (
     MplObject_Type,
+    MplEvent_Type,
     EventHandler_Type,
     EventFilter_Type,
     WeakRefFigure_Type,
@@ -90,7 +90,7 @@ class MplEvent(enum.Enum):
         mpl_obj : mpl.Figure, mpl.Axes, mpl.FigureCanvasBase
             Matplotlib object: Figure, Axes or Canvas
         handler : callable
-            Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+            Event handler function/callable with signature: ``handler(event: MplEvent_Type)``.
         connect : bool
             If this flag is True, event and handler will be connected immediately
 
@@ -162,7 +162,7 @@ class MplEventConnection:
     event : MplEvent
         Event type
     handler : callable
-        Event handler function/callable with signature: ``handler(event: mpl.Event)``.
+        Event handler function/callable with signature: ``handler(event: MplEvent_Type)``.
     connect : bool
         If this flag is True, event and handler will be connected immediately
 
@@ -449,7 +449,7 @@ class MplEventDispatcher:
                 else:
                     logger.warning('"%s": %s is not callable', handler_name, handler)
 
-    def _event_filter_proxy(self, event: Event):
+    def _event_filter_proxy(self, event: MplEvent_Type):
         for event_filter in self._event_filters:
             if event_filter(self, event):
                 return
@@ -544,7 +544,7 @@ class MplEventDispatcher:
                 def on_key_release(self, event: mpl.KeyEvent):
                     pass
 
-            def event_filter(obj: MplEventDispatcher, event: mpl.Event):
+            def event_filter(obj: MplEventDispatcher, event: MplEvent_Type):
                 if isinstance(obj, Dispatcher) and event.name == MplEvent.KEY_PRESS.value:
                     # do something...
 
