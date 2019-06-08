@@ -159,19 +159,22 @@ def test_event_dispatcher_inheritance(figure):
 
 
 def test_event_dispatcher_change_handler(figure):
-
     class EventDispatcher(MplEventDispatcher):
-        latest_event = None
+        latest_event = []
 
         @mpl_event_handler(MplEvent.KEY_PRESS)
         def on_key_press_custom(self, event):
-            self.latest_event = event.name
+            self.latest_event.append(event.name)
+
+        def on_key_release(self, event):
+            self.latest_event.append(event.name)
 
     dispatcher = EventDispatcher(figure)
 
     figure.canvas.key_press_event(None)
+    figure.canvas.key_release_event(None)
 
-    assert dispatcher.latest_event == MplEvent.KEY_PRESS.value
+    assert dispatcher.latest_event == [MplEvent.KEY_PRESS.value, MplEvent.KEY_RELEASE.value]
 
 
 def test_event_dispatcher_change_handler_inheritance(figure):
