@@ -84,7 +84,7 @@ Event filters
 -------------
 
 Sometimes we need to look at, and possibly intercept, the events that are handled in dispatcher classes.
-We can use ``event_filter`` property for setting event filter callable that will intercept events.
+We can use :func:`mpl_events.MplEventDispatcher.add_event_filter` method for adding an event filter callable that will intercept events.
 
 event filter signature:
 
@@ -94,7 +94,8 @@ event filter signature:
         pass
 
 The first argument if referecne to dispatcher object, the second argument is mpl event object.
-If the filter callable returns ``True``, the handler for the event in the dispatcher class will not be called.
+If the filter callable returns ``True``, other filters and the handler for the event in the
+dispatcher class will not be called.
 
 The example:
 
@@ -120,7 +121,7 @@ The example:
                 return False
 
     dispatcher = Dispatcher(figure)
-    dispatcher.event_filter = event_filter
+    dispatcher.add_event_filter(event_filter)
 
 Event connections
 =================

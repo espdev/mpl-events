@@ -3,7 +3,7 @@
 import enum
 import weakref
 
-from typing import Dict, Optional
+from typing import Optional, Dict, List
 
 from .mpl import (
     FigureCanvas,
@@ -417,7 +417,7 @@ class MplEventDispatcher:
         self._figure = weakref.ref(_get_mpl_figure(mpl_obj))
         self._mpl_connections = self._make_mpl_connections()
 
-        self._event_filter: EventFilter_Type = None
+        self._event_filters: List[EventFilter_Type] = []
         self._orig_mpl_connections = {}
 
         if self.disable_default_handlers:
@@ -450,8 +450,10 @@ class MplEventDispatcher:
                     logger.warning('"%s": %s is not callable', handler_name, handler)
 
     def _event_filter_proxy(self, event: Event):
-        if not self._event_filter(self, event):
-            self._orig_mpl_connections[MplEvent(event.name)].handler(event)
+        for event_filter in self._event_filters:
+            if event_filter(self, event):
+                return
+        self._orig_mpl_connections[MplEvent(event.name)].handler(event)
 
     @property
     def figure(self) -> WeakRefFigure_Type:
@@ -496,10 +498,40 @@ class MplEventDispatcher:
         return self._mpl_connections
 
     @property
-    def event_filter(self) -> EventFilter_Type:
-        """Returns event filter callable or None if a filter was not set
+    def event_filters(self) -> List[EventFilter_Type]:
+        """Returns list of event filters that was set for this dispatcher
 
-        The event filter can be used for filtering mpl events in a dispatcher class.
+        Returns
+        -------
+        event_filters: List[callable]
+            List of event filter callables
+        """
+        return self._event_filters
+
+    def mpl_connect(self):
+        """Connects the implemented event handlers to the related matplotlib events for this instance
+        """
+        if not self.valid:
+            logger.error('The figure ref is dead')
+            return
+
+        self.mpl_disconnect()
+        for conn in self._mpl_connections.values():
+            conn.connect()
+
+    def mpl_disconnect(self):
+        """Disconnects the implemented handlers from the related matplotlib events for this instance
+        """
+        if not self.valid:
+            return
+
+        for conn in self._mpl_connections.values():
+            conn.disconnect()
+
+    def add_event_filter(self, filter_obj: EventFilter_Type):
+        """Adds the event filter for this dispatcher
+
+        The event filters can be used for filtering mpl events in a dispatcher class.
 
         Examples
         --------
@@ -521,28 +553,17 @@ class MplEventDispatcher:
                     return True
 
             dispatcher = Dispatcher(figure)
-            dispatcher.event_filter = event_filter
-
-        Returns
-        -------
-        event_filter: callable, None
-            Event filter callable or None if a filter was not set
-        """
-        return self._event_filter
-
-    @event_filter.setter
-    def event_filter(self, filter_obj: EventFilter_Type):
-        """Sets event filter callable or None for reset filter
+            dispatcher.add_event_filter(event_filter)
 
         Parameters
         ----------
-        filter_obj : callable, None
-            Event filter callable or None for reset filter
+        filter_obj: callable
+            Event filter callable
         """
-        if callable(filter_obj):
-            self.event_filter = None  # reset filter
-            self._event_filter = filter_obj
+        if not callable(filter_obj):
+            raise TypeError('Invalid filter object. The filter object must be callable')
 
+        if not self._event_filters:
             self.mpl_disconnect()
             self._orig_mpl_connections = self._mpl_connections
             self._mpl_connections = {}
@@ -551,38 +572,28 @@ class MplEventDispatcher:
                 self._mpl_connections[event] = event.make_connection(
                     self.figure, self._event_filter_proxy)
 
-        elif filter_obj is None:
-            if self._event_filter is None:
-                return
+        self._event_filters.append(filter_obj)
 
+    def remove_event_filter(self, filter_obj: EventFilter_Type):
+        """Removes the event filter for this dispatcher
+
+        The request is ignored if such an event filter has not been added.
+
+        Parameters
+        ----------
+        filter_obj: callable
+            Event filter callable
+        """
+        if filter_obj not in self._event_filters:
+            return
+
+        self._event_filters.remove(filter_obj)
+
+        if not self._event_filters:
             self.mpl_disconnect()
             self._mpl_connections = self._orig_mpl_connections
             self._orig_mpl_connections = {}
-            self._event_filter = None
             self.mpl_connect()
-
-        else:
-            raise TypeError('Invalid filter object. The filter object must be callable or None')
-
-    def mpl_connect(self):
-        """Connects the implemented event handlers to the related matplotlib events for this instance
-        """
-        if not self.valid:
-            logger.error('The figure ref is dead')
-            return
-
-        self.mpl_disconnect()
-        for conn in self._mpl_connections.values():
-            conn.connect()
-
-    def mpl_disconnect(self):
-        """Disconnects the implemented handlers from the related matplotlib events for this instance
-        """
-        if not self.valid:
-            return
-
-        for conn in self._mpl_connections.values():
-            conn.disconnect()
 
     # ########################################################################
     # The methods below define API for handling matplotlib events.

@@ -245,7 +245,7 @@ def test_event_filter(figure, filter_flag, expected):
         return filter_flag
 
     dispatcher = EventDispatcher(figure)
-    dispatcher.event_filter = event_filter
+    dispatcher.add_event_filter(event_filter)
 
     figure.canvas.key_press_event(None)
 
