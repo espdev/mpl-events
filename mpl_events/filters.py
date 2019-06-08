@@ -16,6 +16,11 @@ class LoggingEventFilter:
     """Logging events
 
     The filter logs all events that will be handled.
+
+    .. note::
+
+        This event filter should be append to end of of event filters list.
+
     """
 
     def __call__(self, obj: MplEventDispatcher, event: MplEvent_Type):
