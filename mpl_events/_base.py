@@ -269,6 +269,7 @@ class MplEventConnection:
         The connection is valid if the related matplotlib figure has not been destroyed.
 
         Returns
+        -------
         valid : bool
             True if the connection is valid
         """
@@ -470,6 +471,7 @@ class MplEventDispatcher:
         The dispatcher is valid if the related matplotlib figure has not been destroyed.
 
         Returns
+        -------
         valid : bool
             True if the dispatcher is valid
         """
@@ -515,10 +517,10 @@ class MplEventDispatcher:
                     # do something...
 
                     # If the filter returns True, the handler for the event
-                    # in "Dispatcher" class is not called
+                    # in "Dispatcher" class will not be called
                     return True
 
-            dispatcher = Dispatcher()
+            dispatcher = Dispatcher(figure)
             dispatcher.event_filter = event_filter
 
         Returns
