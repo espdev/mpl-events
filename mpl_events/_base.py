@@ -569,13 +569,13 @@ class MplEventDispatcher:
                 f'Invalid event filter type "{type(filter_obj)}". The event filter must be callable')
 
         if not self._event_filters:
-            self.mpl_disconnect()
             self._orig_mpl_connections = self._mpl_connections
             self._mpl_connections = {}
 
-            for event in self._orig_mpl_connections:
+            for event, conn in self._orig_mpl_connections.items():
                 self._mpl_connections[event] = event.make_connection(
-                    self.figure, self._event_filter_proxy)
+                    self.figure, self._event_filter_proxy, connect=conn.connected)
+                conn.disconnect()
 
         self._event_filters.append(filter_obj)
 
@@ -596,10 +596,15 @@ class MplEventDispatcher:
         self._event_filters.remove(filter_obj)
 
         if not self._event_filters:
+            event_connected = [(event, conn.connected()) for event, conn in self._mpl_connections.items()]
             self.mpl_disconnect()
+
             self._mpl_connections = self._orig_mpl_connections
             self._orig_mpl_connections = {}
-            self.mpl_connect()
+
+            for event, connected in event_connected:
+                if connected:
+                    self._mpl_connections[event].connect()
 
     # ########################################################################
     # The methods below define API for handling matplotlib events.
