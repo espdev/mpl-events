@@ -27,7 +27,7 @@ setup(
     name=NAME,
     version=_get_version(),
     python_requires=PYTHON_REQUIRES,
-    install_requires=['matplotlib >=2.0,<3.3'],
+    install_requires=['matplotlib >=2.0,<3.4'],
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     url='https://github.com/espdev/mpl-events',
     license='MIT',
